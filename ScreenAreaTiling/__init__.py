@@ -1,31 +1,32 @@
 import bpy
 
 from . import (
+    preferences,
     tiling_ops,
     tiling_ui,
-    properties,
 )
 
 
 bl_info = {
     "name": "Screen Area Tiling",
-    "author": "Gixo",
-    "description": "",
-    "blender": (3, 5, 0),
-    "version": (0, 0, 1),
-    "location": "",
+    "author": "Gixo <notgixo@proton.me>",
+    "description": "Split screen areas using a pie menu.",
+    "blender": (3, 0, 0),
+    "version": (0, 1, 0),
+    "location": 'View3D > "Alt" + "Space"',
     "warning": "",
-    "category": "Generic"
+    "support": "COMMUNITY",
+    "category": "Interface",
 }
 
 
 def register():
-    properties.register()
+    preferences.register()
     tiling_ops.register()
     tiling_ui.register()
 
 
 def unregister():
-    properties.unregister()
+    preferences.unregister()
     tiling_ops.unregister()
     tiling_ui.unregister()

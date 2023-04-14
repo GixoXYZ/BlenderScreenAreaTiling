@@ -2,6 +2,7 @@ import bpy
 
 from bpy.types import (
     Panel,
+    Menu,
 )
 
 from . tiling_ops import get_areas
@@ -14,36 +15,61 @@ class VIEW3D_PT_tiling_ui_main(Panel):
     bl_label = "Screen Area Tiling"
     bl_idname = "VIEW3D_PT_tiling_ui_main"
 
+    @classmethod
+    def poll(self, context):
+        pref = bpy.context.preferences.addons["ScreenAreaTiling"].preferences
+        return pref.sidebar_toggle
+
     def draw(self, context):
-        wm = bpy.context.window_manager
-        sat_props = wm.sat_props
+        layout = self.layout
+        pref = bpy.context.preferences.addons["ScreenAreaTiling"].preferences
+
+        box = layout.box()
+        col = box.column()
+        col.label(text="Area Settings:")
+
+        area_dict = {
+            "RIGHT": {"name": "Right", "type": "area_types_right", "ratio": "split_ratio_right"},
+            "LEFT": {"name": "Left", "type": "area_types_left", "ratio": "split_ratio_left"},
+            "TOP": {"name": "Top", "type": "area_types_top", "ratio": "split_ratio_top"},
+            "BOTTOM": {"name": "Bottom", "type": "area_types_bottom", "ratio": "split_ratio_bottom"},
+        }
+
+        for key in area_dict.keys():
+            area = area_dict[key]
+            col.separator()
+            col.label(text=area["name"])
+            col.prop(pref, area["type"], text="")
+            col.prop(pref, area["ratio"])
+
+
+class VIEW3D_MT_PIE_tiling_ui_main(Menu):
+    bl_label = "Screen Area Tiling"
+
+    def draw(self, context):
+        print("test")
+        layout = self.layout
+
         area_dictionary = get_areas()
         parent_area_pointer = str(bpy.context.area.as_pointer())
 
-        layout = self.layout
-        col = layout.column()
+        directions = ["LEFT", "RIGHT", "BOTTOM", "TOP"]
 
-        col.label(text="Area Type")
-        col.prop(sat_props, "area_types", text="")
-        col.prop(sat_props, "split_ratio", text="")
-
-        directions = ["TOP", "BOTTOM", "LEFT", "RIGHT",]
-
+        pie = layout.menu_pie()
         for direction in directions:
             title = direction.title()
             if parent_area_pointer+direction in area_dictionary.keys():
-                row = layout.row()
-                row.active_default = True
-                top = row.operator("sat.close_area", text=f"Close {title} Area")
-                top.direction = direction
+                toggle = pie.operator("sat.close_area", text=f"Close {title} Area", icon="REMOVE")
+                toggle.direction = direction
 
             else:
-                row = layout.row()
-                row.operator("sat.split_area", text=f"Split to {title} Area").direction = direction
+
+                pie.operator("sat.split_area", text=f"Split to {title} Area", icon="ADD").direction = direction
 
 
 classes = (
     VIEW3D_PT_tiling_ui_main,
+    VIEW3D_MT_PIE_tiling_ui_main,
 )
 
 
