@@ -122,7 +122,7 @@ class SAT_OT_close_area(Operator):
                     sub_area = area
                     break
 
-            if sub_area != None:
+            """if sub_area != None:
                 for area in areas:
                     area_pointer = area.as_pointer()
                     # If area sub area gets deleted manually causes error
@@ -155,13 +155,19 @@ class SAT_OT_close_area(Operator):
                 ):
                     bpy.ops.screen.area_split(direction="HORIZONTAL", factor=1)
 
-                    bpy.ops.screen.area_close("INVOKE_DEFAULT")
+                    bpy.ops.screen.area_close("INVOKE_DEFAULT")"""
 
             if sub_area != None:
                 with bpy.context.temp_override(
                     area=sub_area,
                 ):
+                    bpy.ops.screen.area_split(direction="HORIZONTAL", factor=-0.1)
                     bpy.ops.screen.area_close("INVOKE_DEFAULT")
+
+                for new_area in areas:
+                    if new_area not in old_areas:
+
+                        bpy.ops.screen.area_close({"area": new_area})
 
                 # bpy.ops.screen.area_close({"area": area})
                 # print(area_dictionary)
