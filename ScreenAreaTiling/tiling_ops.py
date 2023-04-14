@@ -10,7 +10,6 @@ from bpy.props import (
 
 
 addon_keymaps = []
-old_areas = []
 area_dictionary = {}
 
 
@@ -55,6 +54,7 @@ class SAT_OT_split_area(Operator):
         parent_area_pointer = str(bpy.context.area.as_pointer())
         pref = bpy.context.preferences.addons["ScreenAreaTiling"].preferences
 
+        old_areas = []
         old_areas.clear()
 
         for area in areas:
@@ -65,17 +65,17 @@ class SAT_OT_split_area(Operator):
             split_direction = "VERTICAL"
             area_type = pref.area_types_left
 
-        if self.direction == "RIGHT":
+        elif self.direction == "RIGHT":
             factor = (100 - pref.split_ratio_right)/100
             split_direction = "VERTICAL"
             area_type = pref.area_types_right
 
-        if self.direction == "TOP":
+        elif self.direction == "TOP":
             factor = (100 - pref.split_ratio_top)/100
             split_direction = "HORIZONTAL"
             area_type = pref.area_types_top
 
-        if self.direction == "BOTTOM":
+        elif self.direction == "BOTTOM":
             factor = (pref.split_ratio_bottom)/100
             split_direction = "HORIZONTAL"
             area_type = pref.area_types_bottom
@@ -103,23 +103,68 @@ class SAT_OT_close_area(Operator):
     )
 
     def execute(self, context):
-        parent_area_pointer = str(bpy.context.area.as_pointer())+self.direction
-        if parent_area_pointer in area_dictionary.keys():
+        parent_area_pointer = bpy.context.area.as_pointer()
+        parent_area_key = str(parent_area_pointer)+self.direction
+
+        if parent_area_key in area_dictionary.keys():
             areas = bpy.context.screen.areas
+            outside_area = None
+            sub_area = None
+
+            old_areas = []
+            old_areas.clear()
 
             for area in areas:
-                if area.as_pointer() == area_dictionary[parent_area_pointer]:
-                    with bpy.context.temp_override(
-                        area=area,
-                    ):
-                        bpy.ops.screen.area_close('INVOKE_DEFAULT')
+                old_areas.append(area)
 
-                    # bpy.ops.screen.area_close({"area": area})
-                    # print(area_dictionary)
-
+            for area in areas:
+                if area.as_pointer() == area_dictionary[parent_area_key]:
+                    sub_area = area
                     break
 
-            del area_dictionary[parent_area_pointer]
+            for area in areas:
+                area_pointer = area.as_pointer()
+                pointer_list = [sub_area.as_pointer(), parent_area_pointer]
+
+                width_check = (area.width == sub_area.width)
+                height_check = (area.height == sub_area.height)
+
+                if self.direction == "RIGHT":
+                    sub_area_right_edge_x = (sub_area.x + sub_area.width)
+                    edge_delta = (area.x - sub_area_right_edge_x)
+                    if area_pointer not in pointer_list and height_check and 10 > edge_delta > -10:
+                        outside_area = area
+
+                elif self.direction == "LEFT":
+                    area_right_edge_x = (area.x + area.width)
+                    edge_delta = (sub_area.x - area_right_edge_x)
+                    if area_pointer not in pointer_list and height_check and 10 > edge_delta > -10:
+                        outside_area = area
+
+                elif self.direction == "BOTTOM":
+                    area_top_edge_y = (area.y + area.height)
+                    edge_delta = (sub_area.y - area_top_edge_y)
+                    if area_pointer not in pointer_list and width_check and 10 > edge_delta > -10:
+                        outside_area = area
+
+            if outside_area != None:
+                with bpy.context.temp_override(
+                    area=outside_area,
+                ):
+                    bpy.ops.screen.area_split(direction="HORIZONTAL", factor=1)
+
+                    bpy.ops.screen.area_close("INVOKE_DEFAULT")
+
+            if sub_area != None:
+                with bpy.context.temp_override(
+                    area=sub_area,
+                ):
+                    bpy.ops.screen.area_close("INVOKE_DEFAULT")
+
+                # bpy.ops.screen.area_close({"area": area})
+                # print(area_dictionary)
+
+            del area_dictionary[parent_area_key]
 
         return {"FINISHED"}
 

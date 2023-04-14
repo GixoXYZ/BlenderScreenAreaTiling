@@ -11,6 +11,10 @@ from bpy.props import (
 )
 
 
+"""def _get_workspaces(self, context):
+    return [(s.name, s.name, s.name) for s in bpy.data.screens if s.name != "temp"]"""
+
+
 class SATPreferences(AddonPreferences):
     bl_idname = __package__
 
@@ -19,7 +23,12 @@ class SATPreferences(AddonPreferences):
         default=False,
     )
 
-    types = [
+    """workspace_types: EnumProperty(
+        name="Workspace",
+        items=_get_workspaces,
+    )"""
+
+    area_types = [
         ("VIEW_3D", "3D Viewport", "", "VIEW3D", 0),
         ("IMAGE_EDITOR", "Image Editor", "", "IMAGE", 1),
         ("UV", "UV Editor", "", "UV", 2),
@@ -47,25 +56,25 @@ class SATPreferences(AddonPreferences):
 
     area_types_left: EnumProperty(
         name="Left Editor Type",
-        items=types,
+        items=area_types,
         default="ShaderNodeTree",
     )
 
     area_types_right: EnumProperty(
         name="Right Editor Type",
-        items=types,
+        items=area_types,
         default="GeometryNodeTree",
     )
 
     area_types_bottom: EnumProperty(
         name="Bottom Editor Type",
-        items=types,
+        items=area_types,
         default="ASSETS",
     )
 
     area_types_top: EnumProperty(
         name="Top Editor Type",
-        items=types,
+        items=area_types,
         default="INFO",
     )
 
