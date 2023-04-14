@@ -122,32 +122,34 @@ class SAT_OT_close_area(Operator):
                     sub_area = area
                     break
 
-            for area in areas:
-                area_pointer = area.as_pointer()
-                pointer_list = [sub_area.as_pointer(), parent_area_pointer]
+            if sub_area != None:
+                for area in areas:
+                    area_pointer = area.as_pointer()
+                    # If area sub area gets deleted manually causes error
+                    pointer_list = [sub_area.as_pointer(), parent_area_pointer]
 
-                width_check = (area.width == sub_area.width)
-                height_check = (area.height == sub_area.height)
+                    width_check = (area.width == sub_area.width)
+                    height_check = (area.height == sub_area.height)
 
-                if self.direction == "RIGHT":
-                    sub_area_right_edge_x = (sub_area.x + sub_area.width)
-                    edge_delta = (area.x - sub_area_right_edge_x)
-                    if area_pointer not in pointer_list and height_check and 10 > edge_delta > -10:
-                        outside_area = area
+                    if self.direction == "RIGHT":
+                        sub_area_right_edge_x = (sub_area.x + sub_area.width)
+                        edge_delta = (area.x - sub_area_right_edge_x)
+                        if area_pointer not in pointer_list and height_check and 10 > edge_delta > -10:
+                            outside_area = area
 
-                elif self.direction == "LEFT":
-                    area_right_edge_x = (area.x + area.width)
-                    edge_delta = (sub_area.x - area_right_edge_x)
-                    if area_pointer not in pointer_list and height_check and 10 > edge_delta > -10:
-                        outside_area = area
+                    elif self.direction == "LEFT":
+                        area_right_edge_x = (area.x + area.width)
+                        edge_delta = (sub_area.x - area_right_edge_x)
+                        if area_pointer not in pointer_list and height_check and 10 > edge_delta > -10:
+                            outside_area = area
 
-                elif self.direction == "BOTTOM":
-                    area_top_edge_y = (area.y + area.height)
-                    edge_delta = (sub_area.y - area_top_edge_y)
-                    if area_pointer not in pointer_list and width_check and 10 > edge_delta > -10:
-                        outside_area = area
+                    elif self.direction == "BOTTOM":
+                        area_top_edge_y = (area.y + area.height)
+                        edge_delta = (sub_area.y - area_top_edge_y)
+                        if area_pointer not in pointer_list and width_check and 10 > edge_delta > -10:
+                            outside_area = area
 
-            if outside_area != None:
+            if outside_area != None and outside_area.as_pointer() not in area_dictionary.values():
                 with bpy.context.temp_override(
                     area=outside_area,
                 ):
