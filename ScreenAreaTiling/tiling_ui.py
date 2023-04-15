@@ -47,7 +47,6 @@ class VIEW3D_MT_PIE_tiling_ui_main(Menu):
     bl_label = "Screen Area Tiling"
 
     def draw(self, context):
-        print("test")
         layout = self.layout
 
         area_dictionary = get_areas()
@@ -63,7 +62,6 @@ class VIEW3D_MT_PIE_tiling_ui_main(Menu):
                 toggle.direction = direction
 
             else:
-
                 pie.operator("sat.split_area", text=f"Split to {title} Area", icon="ADD").direction = direction
 
 
