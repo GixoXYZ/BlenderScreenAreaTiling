@@ -8,8 +8,8 @@ from bpy.props import (
     StringProperty,
 )
 
-# TODO if subarea gets deleted manually update the area_dictionary
-# TODO find a way to store sub areas when the file closes so they would be recognized when file gets reopened
+# TODO if sub area gets deleted manually update the area_dictionary
+# TODO find a way to store sub areas when the file closes so they would be recognized when file gets reopened or close all sub areas on exit
 
 addon_keymaps = []
 area_dictionary = {}
