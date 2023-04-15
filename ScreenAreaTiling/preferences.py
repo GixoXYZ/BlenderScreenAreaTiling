@@ -11,8 +11,10 @@ from bpy.props import (
 )
 
 
-"""def _get_workspaces(self, context):
-    return [(s.name, s.name, s.name) for s in bpy.data.screens if s.name != "temp"]"""
+"""
+def _get_workspaces(self, context):
+    return [(s.name, s.name, s.name) for s in bpy.data.screens if s.name != "temp"]
+    """
 
 
 class SATPreferences(AddonPreferences):
@@ -23,10 +25,12 @@ class SATPreferences(AddonPreferences):
         default=False,
     )
 
-    """workspace_types: EnumProperty(
+    """
+    workspace_types: EnumProperty(
         name="Workspace",
         items=_get_workspaces,
-    )"""
+    )
+    """
 
     area_types = [
         ("VIEW_3D", "3D Viewport", "", "VIEW3D", 0),

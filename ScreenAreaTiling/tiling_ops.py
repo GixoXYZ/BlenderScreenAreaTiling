@@ -63,6 +63,7 @@ class SAT_OT_split_area(Operator):
         for area in areas:
             existing_areas.append(area)
 
+        # Setting the rotation and direction of split
         if self.direction == "LEFT":
             factor = (pref.split_ratio_left)/100
             split_direction = "VERTICAL"
@@ -83,8 +84,10 @@ class SAT_OT_split_area(Operator):
             split_direction = "HORIZONTAL"
             area_type = pref.area_types_bottom
 
+        # Splitting 3d viewport based on selected direction
         bpy.ops.screen.area_split(direction=split_direction, factor=factor)
 
+        # Changing the newly created sub area's type
         for new_area in areas:
             if new_area not in existing_areas:
                 new_area.ui_type = area_type
@@ -112,17 +115,21 @@ class SAT_OT_close_area(Operator):
         invert = 1
         factor = 0
 
+        # Checking if there's any split sub areas in current 3d viewport
         if parent_area_key in area_dictionary.keys():
             areas = bpy.context.screen.areas
             outside_area = None
             sub_area = None
 
+            # Getting a reference to selected sub area using its pointer
             for area in areas:
                 if area.as_pointer() == area_dictionary[parent_area_key]:
                     sub_area = area
                     break
 
+            # If selected sub area exists
             if sub_area != None:
+                # Checking outer areas to find if any of them has the same height or width as sub area
                 for area in areas:
                     area_pointer = area.as_pointer()
                     pointer_list = [sub_area.as_pointer(), parent_area_pointer]
@@ -210,6 +217,7 @@ class SAT_OT_close_area(Operator):
                                             factor = invert
                                         break
 
+            # If there was any outer area with the same height or width as sub area
             if outside_area != None and outside_area.as_pointer() not in area_dictionary.values():
                 existing_areas = []
                 existing_areas.clear()
@@ -218,17 +226,20 @@ class SAT_OT_close_area(Operator):
                 for area in areas:
                     existing_areas.append(area)
 
+                # Splitting outer area to avoid the closed area getting added to it
                 with bpy.context.temp_override(
                     area=outside_area,
                 ):
 
                     bpy.ops.screen.area_split(direction=split_direction, factor=factor)
 
+                # Closing sub area
                 with bpy.context.temp_override(
                     area=sub_area,
                 ):
                     bpy.ops.screen.area_close()
 
+                # Removing the dummy split area crated in outer area
                 for area in areas:
                     if area not in existing_areas:
                         dummy = area
@@ -238,6 +249,7 @@ class SAT_OT_close_area(Operator):
                             bpy.ops.screen.area_close()
                         break
 
+            # If there was no outer area with the same height or width as sub area
             elif sub_area != None:
                 with bpy.context.temp_override(
                     area=sub_area,
@@ -246,6 +258,7 @@ class SAT_OT_close_area(Operator):
 
                 # bpy.ops.screen.area_close({"area": area})
 
+            # Removing sub area from dictionary
             del area_dictionary[parent_area_key]
 
         return {"FINISHED"}
