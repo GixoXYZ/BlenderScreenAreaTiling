@@ -8,6 +8,8 @@ from bpy.props import (
     StringProperty,
 )
 
+# TODO if subarea gets deleted manually update the area_dictionary
+# TODO find a way to store sub areas when the file closes so they would be recognized when file gets reopened
 
 addon_keymaps = []
 area_dictionary = {}
@@ -18,7 +20,6 @@ def get_areas():
 
 
 def _add_hotkey():
-
     wm = bpy.context.window_manager
     kc = wm.keyconfigs.addon
 
@@ -27,6 +28,7 @@ def _add_hotkey():
         return
 
     km = kc.keymaps.new(name="Object Mode", space_type="EMPTY")
+    # Adding "Alt" + "Space" as pie menu hotkey
     kmi = km.keymap_items.new(
         SAT_OT_PIE_tiling_ui_main_call.bl_idname, "SPACE", "PRESS", alt=True)
     addon_keymaps.append((km, kmi))
@@ -54,11 +56,12 @@ class SAT_OT_split_area(Operator):
         parent_area_pointer = str(bpy.context.area.as_pointer())
         pref = bpy.context.preferences.addons["ScreenAreaTiling"].preferences
 
-        old_areas = []
-        old_areas.clear()
+        existing_areas = []
+        existing_areas.clear()
 
+        # Saving a list of existing areas
         for area in areas:
-            old_areas.append(area)
+            existing_areas.append(area)
 
         if self.direction == "LEFT":
             factor = (pref.split_ratio_left)/100
@@ -83,7 +86,7 @@ class SAT_OT_split_area(Operator):
         bpy.ops.screen.area_split(direction=split_direction, factor=factor)
 
         for new_area in areas:
-            if new_area not in old_areas:
+            if new_area not in existing_areas:
                 new_area.ui_type = area_type
                 area_dictionary.update({parent_area_pointer+self.direction: new_area.as_pointer()})
 
@@ -105,17 +108,14 @@ class SAT_OT_close_area(Operator):
     def execute(self, context):
         parent_area_pointer = bpy.context.area.as_pointer()
         parent_area_key = str(parent_area_pointer)+self.direction
+        straight = 0
+        invert = 1
+        factor = 0
 
         if parent_area_key in area_dictionary.keys():
             areas = bpy.context.screen.areas
             outside_area = None
             sub_area = None
-
-            old_areas = []
-            old_areas.clear()
-
-            for area in areas:
-                old_areas.append(area)
 
             for area in areas:
                 if area.as_pointer() == area_dictionary[parent_area_key]:
@@ -125,46 +125,126 @@ class SAT_OT_close_area(Operator):
             if sub_area != None:
                 for area in areas:
                     area_pointer = area.as_pointer()
-                    # If area sub area gets deleted manually causes error
                     pointer_list = [sub_area.as_pointer(), parent_area_pointer]
 
                     width_check = (area.width == sub_area.width)
                     height_check = (area.height == sub_area.height)
 
                     if self.direction == "RIGHT":
+                        split_direction = "HORIZONTAL"
                         sub_area_right_edge_x = (sub_area.x + sub_area.width)
                         edge_delta = (area.x - sub_area_right_edge_x)
                         if area_pointer not in pointer_list and height_check and 10 > edge_delta > -10:
                             outside_area = area
 
+                            for i, area in enumerate(areas):
+                                if area == outside_area:
+                                    outside_area_index = i
+
+                            for i, area in enumerate(areas):
+                                if area.width == outside_area.width:
+                                    if i < outside_area_index:
+                                        if area.y > outside_area.y:
+                                            factor = straight
+                                        else:
+                                            factor = invert
+                                        break
+
                     elif self.direction == "LEFT":
+                        split_direction = "HORIZONTAL"
                         area_right_edge_x = (area.x + area.width)
                         edge_delta = (sub_area.x - area_right_edge_x)
                         if area_pointer not in pointer_list and height_check and 10 > edge_delta > -10:
                             outside_area = area
 
+                            for i, area in enumerate(areas):
+                                if area == outside_area:
+                                    outside_area_index = i
+
+                            for i, area in enumerate(areas):
+                                if area.width == outside_area.width:
+                                    if i < outside_area_index:
+                                        if area.x > outside_area.x:
+                                            factor = straight
+                                        else:
+                                            factor = invert
+                                        break
+
+                    elif self.direction == "TOP":
+                        split_direction = "VERTICAL"
+                        sub_area_top_edge_y = (sub_area.y + sub_area.height)
+                        edge_delta = (area.y - sub_area_top_edge_y)
+                        if area_pointer not in pointer_list and width_check and 10 > edge_delta > -10:
+                            outside_area = area
+
+                            for i, area in enumerate(areas):
+                                if area == outside_area:
+                                    outside_area_index = i
+
+                            for i, area in enumerate(areas):
+                                if area.height == outside_area.height:
+                                    if i < outside_area_index:
+                                        if area.y > outside_area.y:
+                                            factor = straight
+                                        else:
+                                            factor = invert
+                                        break
+
                     elif self.direction == "BOTTOM":
+                        split_direction = "VERTICAL"
                         area_top_edge_y = (area.y + area.height)
                         edge_delta = (sub_area.y - area_top_edge_y)
                         if area_pointer not in pointer_list and width_check and 10 > edge_delta > -10:
                             outside_area = area
 
+                            for i, area in enumerate(areas):
+                                if area == outside_area:
+                                    outside_area_index = i
+
+                            for i, area in enumerate(areas):
+                                if area.height == outside_area.height:
+                                    if i < outside_area_index:
+                                        if area.y > outside_area.y:
+                                            factor = straight
+                                        else:
+                                            factor = invert
+                                        break
+
             if outside_area != None and outside_area.as_pointer() not in area_dictionary.values():
+                existing_areas = []
+                existing_areas.clear()
+
+                # Saving a list of existing areas
+                for area in areas:
+                    existing_areas.append(area)
+
                 with bpy.context.temp_override(
                     area=outside_area,
                 ):
-                    bpy.ops.screen.area_split(direction="HORIZONTAL", factor=1)
 
-                    bpy.ops.screen.area_close("INVOKE_DEFAULT")
+                    bpy.ops.screen.area_split(direction=split_direction, factor=factor)
 
-            if sub_area != None:
                 with bpy.context.temp_override(
                     area=sub_area,
                 ):
-                    bpy.ops.screen.area_close("INVOKE_DEFAULT")
+                    bpy.ops.screen.area_close()
+
+                for area in areas:
+                    if area not in existing_areas:
+                        dummy = area
+                        with bpy.context.temp_override(
+                            area=dummy,
+                        ):
+                            bpy.ops.screen.area_close()
+                        break
+
+            elif sub_area != None:
+                with bpy.context.temp_override(
+                    area=sub_area,
+                ):
+                    bpy.ops.screen.area_close()
 
                 # bpy.ops.screen.area_close({"area": area})
-                # print(area_dictionary)
 
             del area_dictionary[parent_area_key]
 
