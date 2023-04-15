@@ -109,8 +109,8 @@ class SAT_OT_close_area(Operator):
         parent_area_pointer = bpy.context.area.as_pointer()
         parent_area_key = str(parent_area_pointer)+self.direction
         straight = 0
-        invert = 1
-        factor = 0
+        invert = 0.9
+        factor = 0.1
 
         if parent_area_key in area_dictionary.keys():
             areas = bpy.context.screen.areas
@@ -245,6 +245,60 @@ class SAT_OT_close_area(Operator):
                     bpy.ops.screen.area_close()
 
                 # bpy.ops.screen.area_close({"area": area})
+
+                # Splitting outer areas when the height or width of the sub area is not the same as parent
+                # Partially works but sometimes makes Blender to crash
+
+                """
+                split_outer_areas = False
+                parent_area = bpy.context.area
+                width_check = (sub_area.width == parent_area.width)
+                height_check = (sub_area.height == parent_area.height)
+
+                for i, area in enumerate(areas):
+                    if area == parent_area:
+                        parent_area_index = i
+
+                if self.direction == "RIGHT" and not height_check:
+                    for i, area in enumerate(areas):
+                        if i < parent_area_index:
+                            sub_area_right_edge_x = (sub_area.x + sub_area.width)
+                            edge_delta = (area.x - sub_area_right_edge_x)
+                            if 10 > edge_delta > -10:
+                                print("Right outer adjacent exists")
+                                outer_area = area
+                                split_direction = "HORIZONTAL"
+                                factor = 0.4
+                                split_outer_areas = True
+                                break
+
+                if split_outer_areas:
+                    existing_areas = []
+                    existing_areas.clear()
+
+                    # Saving a list of existing areas
+                    for area in areas:
+                        existing_areas.append(area)
+
+                    with bpy.context.temp_override(
+                        area=outer_area,
+                    ):
+                        bpy.ops.screen.area_split(direction=split_direction, factor=factor)
+
+                    with bpy.context.temp_override(
+                        area=sub_area,
+                    ):
+                        bpy.ops.screen.area_close()
+
+                    for area in areas:
+                        if area not in existing_areas:
+                            dummy = area
+                            with bpy.context.temp_override(
+                                area=dummy,
+                            ):
+                                bpy.ops.screen.area_close()
+                            break
+                """
 
             del area_dictionary[parent_area_key]
 
