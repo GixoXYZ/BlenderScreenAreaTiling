@@ -91,7 +91,9 @@ class SAT_OT_split_area(Operator):
         for new_area in areas:
             if new_area not in existing_areas:
                 new_area.ui_type = area_type
-                area_dictionary.update({parent_area_pointer+self.direction: new_area.as_pointer()})
+                area_dictionary.update(
+                    {parent_area_pointer+self.direction: new_area.as_pointer()}
+                )
 
         print(area_dictionary)
 
@@ -231,7 +233,10 @@ class SAT_OT_close_area(Operator):
                     area=outside_area,
                 ):
 
-                    bpy.ops.screen.area_split(direction=split_direction, factor=factor)
+                    bpy.ops.screen.area_split(
+                        direction=split_direction,
+                        factor=factor
+                    )
 
                 # Closing sub area
                 with bpy.context.temp_override(
@@ -239,7 +244,7 @@ class SAT_OT_close_area(Operator):
                 ):
                     bpy.ops.screen.area_close()
 
-                # Removing the dummy split area crated in outer area
+                # Removing the dummy split area created in outer area
                 for area in areas:
                     if area not in existing_areas:
                         dummy = area
