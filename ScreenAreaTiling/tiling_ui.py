@@ -42,6 +42,8 @@ class VIEW3D_PT_tiling_ui_main(Panel):
             col.prop(pref, area["type"], text="")
             col.prop(pref, area["ratio"])
 
+        col.operator("sat.move_area")
+
 
 class VIEW3D_MT_PIE_tiling_ui_main(Menu):
     bl_label = "Screen Area Tiling"
@@ -58,11 +60,15 @@ class VIEW3D_MT_PIE_tiling_ui_main(Menu):
         for direction in directions:
             title = direction.title()
             if parent_area_pointer+direction in area_dictionary.keys():
-                toggle = pie.operator("sat.close_area", text=f"Close {title} Area", icon="REMOVE")
+                toggle = pie.operator(
+                    "sat.close_area", text=f"Close {title} Area", icon="REMOVE")
                 toggle.direction = direction
 
             else:
-                pie.operator("sat.split_area", text=f"Split to {title} Area", icon="ADD").direction = direction
+                pie.operator(
+                    "sat.split_area", text=f"Split to {title} Area", icon="ADD").direction = direction
+
+        pie.operator("sat.move_area")
 
 
 classes = (

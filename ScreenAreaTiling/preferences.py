@@ -22,7 +22,7 @@ class SATPreferences(AddonPreferences):
 
     sidebar_toggle: BoolProperty(
         name="Toggle Sidebar Panel",
-        default=False,
+        default=True,
     )
 
     """
