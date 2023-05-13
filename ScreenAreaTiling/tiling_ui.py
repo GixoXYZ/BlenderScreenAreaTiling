@@ -16,7 +16,7 @@ class VIEW3D_PT_tiling_ui_main(Panel):
     bl_idname = "VIEW3D_PT_tiling_ui_main"
 
     @classmethod
-    def poll(self, context):
+    def poll(cls, context):
         pref = bpy.context.preferences.addons["ScreenAreaTiling"].preferences
         return pref.sidebar_toggle
 

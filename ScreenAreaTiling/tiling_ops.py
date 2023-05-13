@@ -62,10 +62,14 @@ class SAT_OT_split_area(Operator):
         existing_areas.clear()
 
         # Saving a list of existing areas
-        for area in areas:
-            existing_areas.append(area)
+        existing_areas.extend(iter(areas))
 
-        if self.direction == "LEFT":
+        if self.direction == "BOTTOM":
+            factor = (pref.split_ratio_bottom)/100
+            split_direction = "HORIZONTAL"
+            area_type = pref.area_types_bottom
+
+        elif self.direction == "LEFT":
             factor = (pref.split_ratio_left)/100
             split_direction = "VERTICAL"
             area_type = pref.area_types_left
@@ -79,11 +83,6 @@ class SAT_OT_split_area(Operator):
             factor = (100 - pref.split_ratio_top)/100
             split_direction = "HORIZONTAL"
             area_type = pref.area_types_top
-
-        elif self.direction == "BOTTOM":
-            factor = (pref.split_ratio_bottom)/100
-            split_direction = "HORIZONTAL"
-            area_type = pref.area_types_bottom
 
         bpy.ops.screen.area_split(direction=split_direction, factor=factor)
 
@@ -165,7 +164,6 @@ class SAT_OT_close_area(Operator):
             del area_dictionary[parent_area_key]
 
             horizontal = ["TOP", "BOTTOM"]
-
             if self.direction in horizontal:
                 self.delta = org_height - bpy.context.area.height
 
