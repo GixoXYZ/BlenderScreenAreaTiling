@@ -14,7 +14,13 @@ from bpy.props import (
 """
 def _get_workspaces(self, context):
     return [(s.name, s.name, s.name) for s in bpy.data.screens if s.name != "temp"]
-    """
+"""
+
+# TODO get area types items from ui_type
+"""
+def area_types_items_callback(self, context):
+    return bpy.types.Area.bl_rna.properties['ui_type'].enum_items
+"""
 
 
 class SATPreferences(AddonPreferences):

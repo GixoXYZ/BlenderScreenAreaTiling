@@ -55,7 +55,7 @@ class SAT_OT_split_area(Operator):
     def execute(self, context):
         areas = bpy.context.screen.areas
         parent_area_pointer = str(bpy.context.area.as_pointer())
-        pref = bpy.context.preferences.addons["ScreenAreaTiling"].preferences
+        pref = bpy.context.preferences.addons[__package__].preferences
 
         existing_areas = []
         existing_areas.clear()

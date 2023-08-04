@@ -17,12 +17,12 @@ class VIEW3D_PT_tiling_ui_main(Panel):
 
     @classmethod
     def poll(self, context):
-        pref = bpy.context.preferences.addons["ScreenAreaTiling"].preferences
+        pref = bpy.context.preferences.addons[__package__].preferences
         return pref.sidebar_toggle
 
     def draw(self, context):
         layout = self.layout
-        pref = bpy.context.preferences.addons["ScreenAreaTiling"].preferences
+        pref = bpy.context.preferences.addons[__package__].preferences
 
         box = layout.box()
         col = box.column()
@@ -69,6 +69,33 @@ class VIEW3D_MT_PIE_tiling_ui_main(Menu):
                 ).direction = direction
 
 
+def view3d_header_icons(self, context):
+    layout = self.layout
+    area_dictionary = get_areas()
+    parent_area_pointer = str(bpy.context.area.as_pointer())
+    pref = bpy.context.preferences.addons[__package__].preferences
+
+    directions = ["LEFT", "RIGHT", "BOTTOM", "TOP"]
+
+    row = layout.row(align=True)
+    row.alignment = "RIGHT"
+    for direction in directions:
+        area_type_enum = pref.bl_rna.properties[f"area_types_{direction.lower()}"].enum_items
+        area_type = getattr(pref, f"area_types_{direction.lower()}")
+        item = area_type_enum.get(area_type)
+        title = item.name
+        icon = item.icon
+        if parent_area_pointer + direction in area_dictionary.keys():
+            sub_row = row.row()
+            sub_row.active_default = True
+            toggle = sub_row.operator("sat.close_area", text=title, icon=icon)
+            toggle.direction = direction
+
+        else:
+            row.operator("sat.split_area", text=title,
+                         icon=icon).direction = direction
+
+
 classes = (
     VIEW3D_PT_tiling_ui_main,
     VIEW3D_MT_PIE_tiling_ui_main,
@@ -76,12 +103,14 @@ classes = (
 
 
 def register():
+    bpy.types.VIEW3D_HT_tool_header.append(view3d_header_icons)
     from bpy.utils import register_class
     for cls in classes:
         register_class(cls)
 
 
 def unregister():
+    bpy.types.VIEW3D_HT_tool_header.remove(view3d_header_icons)
     from bpy.utils import unregister_class
     for cls in reversed(classes):
         unregister_class(cls)
