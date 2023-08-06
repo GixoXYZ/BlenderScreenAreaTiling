@@ -70,16 +70,7 @@ def close_area(self, context, direction, parent_area_pointer, parent_area_key):
             wh_check = None
             xy_check = None
 
-            if direction == "RIGHT":
-                split_direction = "HORIZONTAL"
-                sub_area_right_edge_x = (sub_area.x + sub_area.width)
-                edge_delta = (area.x - sub_area_right_edge_x)
-                if area_pointer not in pointer_list and height_check and 10 > edge_delta > -10:
-                    outside_area = area
-                    wh_check = (area.width == outside_area.width)
-                    xy_check = (area.y > outside_area.y)
-
-            elif direction == "LEFT":
+            if direction == "LEFT":
                 split_direction = "HORIZONTAL"
                 area_right_edge_x = (area.x + area.width)
                 edge_delta = (sub_area.x - area_right_edge_x)
@@ -87,6 +78,15 @@ def close_area(self, context, direction, parent_area_pointer, parent_area_key):
                     outside_area = area
                     wh_check = (area.width == outside_area.width)
                     xy_check = (area.x > outside_area.x)
+
+            elif direction == "RIGHT":
+                split_direction = "HORIZONTAL"
+                sub_area_right_edge_x = (sub_area.x + sub_area.width)
+                edge_delta = (area.x - sub_area_right_edge_x)
+                if area_pointer not in pointer_list and height_check and 10 > edge_delta > -10:
+                    outside_area = area
+                    wh_check = (area.width == outside_area.width)
+                    xy_check = (area.y > outside_area.y)
 
             elif direction == "TOP":
                 split_direction = "VERTICAL"
@@ -111,10 +111,7 @@ def close_area(self, context, direction, parent_area_pointer, parent_area_key):
                     outside_area_index = i
 
             for i, area in enumerate(areas):
-                if wh_check and i < outside_area_index and xy_check:
-                    factor = 0
-                else:
-                    factor = 1
+                factor = 0 if wh_check and i < outside_area_index and xy_check else 1
                 break
 
     # If there was any outer area with the same height or width as sub area
@@ -174,9 +171,7 @@ def split_area(self, context, direction):
     existing_areas.clear()
 
     # Saving a list of existing areas
-    for area in areas:
-        existing_areas.append(area)
-
+    existing_areas.extend(iter(areas))
     # Setting the rotation and direction of split
     if direction == "LEFT":
         factor = (pref.split_ratio_left) / 100
@@ -242,15 +237,16 @@ class SAT_OT_close_area(Operator):
         sub_areas = [key for key in area_dictionary.keys() if key.startswith(str(parent_area_pointer))]
         rev_sub_areas = sub_areas[::-1]
 
+        # Closing the sub-areas with higher index
         for sub_area in rev_sub_areas:
             direction = re.sub(r"\d", "", sub_area)
             close_area(self, context, direction, parent_area_pointer, sub_area)
 
         sub_areas.remove(parent_area_key)
+        # Reopen previously opened sub-areas
         if sub_areas:
             directions = [re.sub(r"\d", "", char) for char in sub_areas]
             for direction in directions:
-                print(direction)
                 split_area(self, context, direction)
 
         return {"FINISHED"}

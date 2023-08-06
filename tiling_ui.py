@@ -16,7 +16,7 @@ class VIEW3D_PT_tiling_ui_main(Panel):
     bl_idname = "VIEW3D_PT_tiling_ui_main"
 
     @classmethod
-    def poll(self, context):
+    def poll(cls, context):
         pref = bpy.context.preferences.addons[__package__].preferences
         return pref.sidebar_toggle
 
@@ -29,14 +29,13 @@ class VIEW3D_PT_tiling_ui_main(Panel):
         col.label(text="Area Settings:")
 
         area_dict = {
-            "RIGHT": {"name": "Right", "type": "area_types_right", "ratio": "split_ratio_right"},
             "LEFT": {"name": "Left", "type": "area_types_left", "ratio": "split_ratio_left"},
+            "RIGHT": {"name": "Right", "type": "area_types_right", "ratio": "split_ratio_right"},
             "TOP": {"name": "Top", "type": "area_types_top", "ratio": "split_ratio_top"},
             "BOTTOM": {"name": "Bottom", "type": "area_types_bottom", "ratio": "split_ratio_bottom"},
         }
 
-        for key in area_dict.keys():
-            area = area_dict[key]
+        for area in area_dict.values():
             col.separator()
             col.label(text=area["name"])
             col.prop(pref, area["type"], text="")
@@ -75,7 +74,7 @@ def view3d_header_icons(self, context):
     parent_area_pointer = str(bpy.context.area.as_pointer())
     pref = bpy.context.preferences.addons[__package__].preferences
 
-    directions = ["LEFT", "RIGHT", "BOTTOM", "TOP"]
+    directions = ["LEFT", "RIGHT", "TOP", "BOTTOM"]
 
     row = layout.row(align=True)
     row.alignment = "RIGHT"
@@ -92,8 +91,10 @@ def view3d_header_icons(self, context):
             toggle.direction = direction
 
         else:
-            row.operator("sat.split_area", text=title,
-                         icon=icon).direction = direction
+            row.operator(
+                "sat.split_area", text=title,
+                icon=icon
+            ).direction = direction
 
 
 classes = (

@@ -11,11 +11,6 @@ from bpy.props import (
 )
 
 
-"""
-def _get_workspaces(self, context):
-    return [(s.name, s.name, s.name) for s in bpy.data.screens if s.name != "temp"]
-"""
-
 # TODO get area types items from ui_type
 """
 def area_types_items_callback(self, context):
@@ -30,13 +25,6 @@ class SATPreferences(AddonPreferences):
         name="Toggle Sidebar Panel",
         default=False,
     )
-
-    """
-    workspace_types: EnumProperty(
-        name="Workspace",
-        items=_get_workspaces,
-    )
-    """
 
     area_types = [
         ("VIEW_3D", "3D Viewport", "", "VIEW3D", 0),
@@ -128,14 +116,13 @@ class SATPreferences(AddonPreferences):
         col.label(text="Area Settings:")
 
         area_dict = {
-            "RIGHT": {"name": "Right", "type": "area_types_right", "ratio": "split_ratio_right"},
             "LEFT": {"name": "Left", "type": "area_types_left", "ratio": "split_ratio_left"},
+            "RIGHT": {"name": "Right", "type": "area_types_right", "ratio": "split_ratio_right"},
             "TOP": {"name": "Top", "type": "area_types_top", "ratio": "split_ratio_top"},
             "BOTTOM": {"name": "Bottom", "type": "area_types_bottom", "ratio": "split_ratio_bottom"},
         }
 
-        for key in area_dict.keys():
-            area = area_dict[key]
+        for area in area_dict.values():
             col.separator()
             col.label(text=area["name"])
             row = col.row()
