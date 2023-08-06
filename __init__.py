@@ -12,7 +12,7 @@ bl_info = {
     "author": "Gixo <notgixo@proton.me>",
     "description": "Split screen areas using a pie menu.",
     "blender": (3, 0, 0),
-    "version": (0, 1, 2, "alpha"),
+    "version": (0, 1, 3, "alpha"),
     "location": 'View3D > "Alt" + "Space"',
     "warning": "",
     "support": "COMMUNITY",
