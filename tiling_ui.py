@@ -47,24 +47,27 @@ class VIEW3D_MT_PIE_tiling_ui_main(Menu):
 
     def draw(self, context):
         layout = self.layout
-
         area_dictionary = get_areas()
         parent_area_pointer = str(bpy.context.area.as_pointer())
+        pref = bpy.context.preferences.addons[__package__].preferences
 
         directions = ["LEFT", "RIGHT", "BOTTOM", "TOP"]
 
         pie = layout.menu_pie()
         for direction in directions:
-            title = direction.title()
+            area_type_enum = pref.bl_rna.properties[f"area_type_{direction.lower()}"].enum_items
+            area_type = getattr(pref, f"area_type_{direction.lower()}")
+            item = area_type_enum.get(area_type)
+            title = item.name
+            icon = item.icon
             if parent_area_pointer + direction in area_dictionary.keys():
-                toggle = pie.operator(
-                    "sat.close_area", text=f"Close {title} Area", icon="REMOVE"
-                )
+                toggle = pie.operator("sat.close_area", text=f"Close {title}", icon=icon)
                 toggle.direction = direction
 
             else:
                 pie.operator(
-                    "sat.split_area", text=f"Split to {title} Area", icon="ADD"
+                    "sat.split_area", text=f"Open {title}",
+                    icon=icon
                 ).direction = direction
 
 
