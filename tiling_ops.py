@@ -9,9 +9,9 @@ from bpy.props import (
     StringProperty,
 )
 
-# TODO if sub area gets deleted manually update the area_dictionary
-# TODO find a way to store sub areas when the file closes so they would be
-# recognized when file gets reopened or close all sub areas on exit
+# TODO Update the area_dictionary if sub areas are closed manually.
+# TODO Find a way to store opened usb-areas between sessions.
+
 
 addon_keymaps = []
 area_dictionary = {}
@@ -30,7 +30,7 @@ def _add_hotkey():
         return
 
     km = kc.keymaps.new(name="Object Mode", space_type="EMPTY")
-    # Adding "Alt" + "Space" as pie menu hotkey
+    # Add "Alt" + "Space" as the pie menu hotkey.
     kmi = km.keymap_items.new(
         SAT_OT_PIE_tiling_ui_main_call.bl_idname, "SPACE", "PRESS", alt=True)
     addon_keymaps.append((km, kmi))
@@ -45,7 +45,7 @@ def _remove_hotkey():
 
 def close_area(self, context, direction, parent_area_pointer, parent_area_key):
     factor = 0
-    # Checking if there's any split sub areas in current 3d viewport
+    # Check if the selected sub area exists and is not closed manually.
     if parent_area_key in area_dictionary.keys():
         areas = bpy.context.screen.areas
         outside_area = None
@@ -58,9 +58,9 @@ def close_area(self, context, direction, parent_area_pointer, parent_area_key):
             None,
         )
 
-    # If selected sub area exists
+    # Check if the selected sub area exists.
     if sub_area is not None:
-        # Checking outer areas to find if any of them has the same height or width as sub area
+        # Search for outer areas with matching height or width to the selected sub area.
         for area in areas:
             area_pointer = area.as_pointer()
             pointer_list = [sub_area.as_pointer(), parent_area_pointer]
@@ -114,16 +114,16 @@ def close_area(self, context, direction, parent_area_pointer, parent_area_key):
                 factor = 0 if wh_check and i < outside_area_index and xy_check else 1
                 break
 
-    # If there was any outer area with the same height or width as sub area
+    # Check if there are any outer areas that match the height or width of the selected sub area.
     if outside_area is not None and outside_area.as_pointer() not in area_dictionary.values():
         existing_areas = []
         existing_areas.clear()
 
-        # Saving a list of existing areas
+        # Save a list of existing areas.
         for area in areas:
             existing_areas.append(area)
 
-        # Splitting outer area to avoid the closed area getting added to it
+        # Split outer area to avoid the wrong distribution of the leftover space after closing the selected sub area.
         with bpy.context.temp_override(
             area=outside_area,
         ):
@@ -133,13 +133,13 @@ def close_area(self, context, direction, parent_area_pointer, parent_area_key):
                 factor=factor
             )
 
-        # Closing sub area
+        # Close the selected sub area.
         with bpy.context.temp_override(
             area=sub_area,
         ):
             bpy.ops.screen.area_close()
 
-        # Removing the dummy split area created in outer area
+        # Join the splitted outer area back to its original state.
         for area in areas:
             if area not in existing_areas:
                 dummy = area
@@ -149,16 +149,14 @@ def close_area(self, context, direction, parent_area_pointer, parent_area_key):
                     bpy.ops.screen.area_close()
                 break
 
-    # If there was no outer area with the same height or width as sub area
+    # If there was no matching outer area.
     elif sub_area is not None:
         with bpy.context.temp_override(
             area=sub_area,
         ):
             bpy.ops.screen.area_close()
 
-        # bpy.ops.screen.area_close({"area": area})
-
-    # Removing sub area from dictionary
+    # Remove the selected sub area from the dictionary.
     del area_dictionary[parent_area_key]
 
 
@@ -170,9 +168,9 @@ def split_area(self, context, direction):
     existing_areas = []
     existing_areas.clear()
 
-    # Saving a list of existing areas
+    # Save a list of existing areas.
     existing_areas.extend(iter(areas))
-    # Setting the rotation and direction of split
+    # Set the direction of the split based on selected sub area.
     if direction == "LEFT":
         factor = (pref.split_ratio_left) / 100
         split_direction = "VERTICAL"
@@ -193,10 +191,10 @@ def split_area(self, context, direction):
         split_direction = "HORIZONTAL"
         area_type = pref.area_types_bottom
 
-    # Splitting 3d viewport based on selected direction
+    # Split 3d viewport based on the selected sub area.
     bpy.ops.screen.area_split(direction=split_direction, factor=factor)
 
-    # Changing the newly created sub area's type
+    # Change the newly created sub area's type to the selected area type.
     for new_area in areas:
         if new_area not in existing_areas:
             new_area.ui_type = area_type
@@ -237,13 +235,14 @@ class SAT_OT_close_area(Operator):
         sub_areas = [key for key in area_dictionary.keys() if key.startswith(str(parent_area_pointer))]
         rev_sub_areas = sub_areas[::-1]
 
-        # Closing the sub-areas with higher index
+        # Close the opened sub areas in reverse order.
         for sub_area in rev_sub_areas:
             direction = re.sub(r"\d", "", sub_area)
             close_area(self, context, direction, parent_area_pointer, sub_area)
 
+        # Remove the selected sub area from the list.
         sub_areas.remove(parent_area_key)
-        # Reopen previously opened sub-areas
+        # Reopen previously opened sub areas.
         if sub_areas:
             directions = [re.sub(r"\d", "", char) for char in sub_areas]
             for direction in directions:
