@@ -11,10 +11,11 @@ from bpy.props import (
 )
 
 
+# TODO Get area type items from ui_type.
 """
-def _get_workspaces(self, context):
-    return [(s.name, s.name, s.name) for s in bpy.data.screens if s.name != "temp"]
-    """
+def area_type_items_callback(self, context):
+    return bpy.types.Area.bl_rna.properties['ui_type'].enum_items
+"""
 
 
 class SATPreferences(AddonPreferences):
@@ -24,13 +25,6 @@ class SATPreferences(AddonPreferences):
         name="Toggle Sidebar Panel",
         default=False,
     )
-
-    """
-    workspace_types: EnumProperty(
-        name="Workspace",
-        items=_get_workspaces,
-    )
-    """
 
     area_types = [
         ("VIEW_3D", "3D Viewport", "", "VIEW3D", 0),
@@ -58,25 +52,25 @@ class SATPreferences(AddonPreferences):
         ("PREFERENCES", "Preferences", "", "PREFERENCES", 22),
     ]
 
-    area_types_left: EnumProperty(
+    area_type_left: EnumProperty(
         name="Left Editor Type",
         items=area_types,
         default="ShaderNodeTree",
     )
 
-    area_types_right: EnumProperty(
+    area_type_right: EnumProperty(
         name="Right Editor Type",
         items=area_types,
         default="GeometryNodeTree",
     )
 
-    area_types_bottom: EnumProperty(
+    area_type_bottom: EnumProperty(
         name="Bottom Editor Type",
         items=area_types,
         default="ASSETS",
     )
 
-    area_types_top: EnumProperty(
+    area_type_top: EnumProperty(
         name="Top Editor Type",
         items=area_types,
         default="INFO",
@@ -122,14 +116,13 @@ class SATPreferences(AddonPreferences):
         col.label(text="Area Settings:")
 
         area_dict = {
-            "RIGHT": {"name": "Right", "type": "area_types_right", "ratio": "split_ratio_right"},
-            "LEFT": {"name": "Left", "type": "area_types_left", "ratio": "split_ratio_left"},
-            "TOP": {"name": "Top", "type": "area_types_top", "ratio": "split_ratio_top"},
-            "BOTTOM": {"name": "Bottom", "type": "area_types_bottom", "ratio": "split_ratio_bottom"},
+            "LEFT": {"name": "Left", "type": "area_type_left", "ratio": "split_ratio_left"},
+            "RIGHT": {"name": "Right", "type": "area_type_right", "ratio": "split_ratio_right"},
+            "TOP": {"name": "Top", "type": "area_type_top", "ratio": "split_ratio_top"},
+            "BOTTOM": {"name": "Bottom", "type": "area_type_bottom", "ratio": "split_ratio_bottom"},
         }
 
-        for key in area_dict.keys():
-            area = area_dict[key]
+        for area in area_dict.values():
             col.separator()
             col.label(text=area["name"])
             row = col.row()
