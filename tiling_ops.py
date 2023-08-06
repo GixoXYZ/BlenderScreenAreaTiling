@@ -32,7 +32,8 @@ def _add_hotkey():
     km = kc.keymaps.new(name="Object Mode", space_type="EMPTY")
     # Add "Alt" + "Space" as the pie menu hotkey.
     kmi = km.keymap_items.new(
-        SAT_OT_PIE_tiling_ui_main_call.bl_idname, "SPACE", "PRESS", alt=True)
+        SAT_OT_PIE_tiling_ui_main_call.bl_idname, "SPACE", "PRESS", alt=True
+    )
     addon_keymaps.append((km, kmi))
 
 
@@ -43,7 +44,7 @@ def _remove_hotkey():
     addon_keymaps.clear()
 
 
-def close_area(self, context, direction, parent_area_pointer, parent_area_key):
+def _close_area(direction, parent_area_pointer, parent_area_key):
     factor = 0
     # Check if the selected sub area exists and is not closed manually.
     if parent_area_key in area_dictionary.keys():
@@ -160,7 +161,7 @@ def close_area(self, context, direction, parent_area_pointer, parent_area_key):
     del area_dictionary[parent_area_key]
 
 
-def split_area(self, context, direction):
+def _split_area(direction):
     areas = bpy.context.screen.areas
     parent_area_pointer = str(bpy.context.area.as_pointer())
     pref = bpy.context.preferences.addons[__package__].preferences
@@ -174,22 +175,22 @@ def split_area(self, context, direction):
     if direction == "LEFT":
         factor = (pref.split_ratio_left) / 100
         split_direction = "VERTICAL"
-        area_type = pref.area_types_left
+        area_type = pref.area_type_left
 
     elif direction == "RIGHT":
         factor = (100 - pref.split_ratio_right) / 100
         split_direction = "VERTICAL"
-        area_type = pref.area_types_right
+        area_type = pref.area_type_right
 
     elif direction == "TOP":
         factor = (100 - pref.split_ratio_top) / 100
         split_direction = "HORIZONTAL"
-        area_type = pref.area_types_top
+        area_type = pref.area_type_top
 
     elif direction == "BOTTOM":
         factor = (pref.split_ratio_bottom) / 100
         split_direction = "HORIZONTAL"
-        area_type = pref.area_types_bottom
+        area_type = pref.area_type_bottom
 
     # Split 3d viewport based on the selected sub area.
     bpy.ops.screen.area_split(direction=split_direction, factor=factor)
@@ -214,7 +215,7 @@ class SAT_OT_split_area(Operator):
     )
 
     def execute(self, context):
-        split_area(self, context, self.direction)
+        _split_area(self.direction)
 
         return {"FINISHED"}
 
@@ -238,7 +239,7 @@ class SAT_OT_close_area(Operator):
         # Close the opened sub areas in reverse order.
         for sub_area in rev_sub_areas:
             direction = re.sub(r"\d", "", sub_area)
-            close_area(self, context, direction, parent_area_pointer, sub_area)
+            _close_area(direction, parent_area_pointer, sub_area)
 
         # Remove the selected sub area from the list.
         sub_areas.remove(parent_area_key)
@@ -246,7 +247,7 @@ class SAT_OT_close_area(Operator):
         if sub_areas:
             directions = [re.sub(r"\d", "", char) for char in sub_areas]
             for direction in directions:
-                split_area(self, context, direction)
+                _split_area(direction)
 
         return {"FINISHED"}
 

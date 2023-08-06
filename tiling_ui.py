@@ -29,10 +29,10 @@ class VIEW3D_PT_tiling_ui_main(Panel):
         col.label(text="Area Settings:")
 
         area_dict = {
-            "LEFT": {"name": "Left", "type": "area_types_left", "ratio": "split_ratio_left"},
-            "RIGHT": {"name": "Right", "type": "area_types_right", "ratio": "split_ratio_right"},
-            "TOP": {"name": "Top", "type": "area_types_top", "ratio": "split_ratio_top"},
-            "BOTTOM": {"name": "Bottom", "type": "area_types_bottom", "ratio": "split_ratio_bottom"},
+            "LEFT": {"name": "Left", "type": "area_type_left", "ratio": "split_ratio_left"},
+            "RIGHT": {"name": "Right", "type": "area_type_right", "ratio": "split_ratio_right"},
+            "TOP": {"name": "Top", "type": "area_type_top", "ratio": "split_ratio_top"},
+            "BOTTOM": {"name": "Bottom", "type": "area_type_bottom", "ratio": "split_ratio_bottom"},
         }
 
         for area in area_dict.values():
@@ -79,8 +79,8 @@ def view3d_header_icons(self, context):
     row = layout.row(align=True)
     row.alignment = "RIGHT"
     for direction in directions:
-        area_type_enum = pref.bl_rna.properties[f"area_types_{direction.lower()}"].enum_items
-        area_type = getattr(pref, f"area_types_{direction.lower()}")
+        area_type_enum = pref.bl_rna.properties[f"area_type_{direction.lower()}"].enum_items
+        area_type = getattr(pref, f"area_type_{direction.lower()}")
         item = area_type_enum.get(area_type)
         title = item.name
         icon = item.icon
