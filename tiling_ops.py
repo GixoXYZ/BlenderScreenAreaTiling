@@ -44,11 +44,11 @@ def _remove_hotkey():
     addon_keymaps.clear()
 
 
-def _close_area(direction, parent_area_pointer, parent_area_key):
+def _close_area(context, direction, parent_area_pointer, parent_area_key):
     factor = 0
     # Check if the selected sub area exists and is not closed manually.
     if parent_area_key in area_dictionary.keys():
-        areas = bpy.context.screen.areas
+        areas = context.screen.areas
         outside_area = None
         sub_area = next(
             (
@@ -125,7 +125,7 @@ def _close_area(direction, parent_area_pointer, parent_area_key):
             existing_areas.append(area)
 
         # Split outer area to avoid the wrong distribution of the leftover space after closing the selected sub area.
-        with bpy.context.temp_override(
+        with context.temp_override(
             area=outside_area,
         ):
 
@@ -135,7 +135,7 @@ def _close_area(direction, parent_area_pointer, parent_area_key):
             )
 
         # Close the selected sub area.
-        with bpy.context.temp_override(
+        with context.temp_override(
             area=sub_area,
         ):
             bpy.ops.screen.area_close()
@@ -144,7 +144,7 @@ def _close_area(direction, parent_area_pointer, parent_area_key):
         for area in areas:
             if area not in existing_areas:
                 dummy = area
-                with bpy.context.temp_override(
+                with context.temp_override(
                     area=dummy,
                 ):
                     bpy.ops.screen.area_close()
@@ -152,7 +152,7 @@ def _close_area(direction, parent_area_pointer, parent_area_key):
 
     # If there was no matching outer area.
     elif sub_area is not None:
-        with bpy.context.temp_override(
+        with context.temp_override(
             area=sub_area,
         ):
             bpy.ops.screen.area_close()
@@ -161,10 +161,10 @@ def _close_area(direction, parent_area_pointer, parent_area_key):
     del area_dictionary[parent_area_key]
 
 
-def _split_area(direction):
-    areas = bpy.context.screen.areas
-    parent_area_pointer = str(bpy.context.area.as_pointer())
-    pref = bpy.context.preferences.addons[__package__].preferences
+def _split_area(context, direction):
+    areas = context.screen.areas
+    parent_area_pointer = str(context.area.as_pointer())
+    pref = context.preferences.addons[__package__].preferences
 
     existing_areas = []
     existing_areas.clear()
@@ -215,7 +215,7 @@ class SAT_OT_split_area(Operator):
     )
 
     def execute(self, context):
-        _split_area(self.direction)
+        _split_area(context, self.direction)
 
         return {"FINISHED"}
 
@@ -231,7 +231,7 @@ class SAT_OT_close_area(Operator):
     )
 
     def execute(self, context):
-        parent_area_pointer = bpy.context.area.as_pointer()
+        parent_area_pointer = context.area.as_pointer()
         parent_area_key = str(parent_area_pointer) + self.direction
         sub_areas = [key for key in area_dictionary.keys() if key.startswith(str(parent_area_pointer))]
         rev_sub_areas = sub_areas[::-1]
@@ -239,7 +239,7 @@ class SAT_OT_close_area(Operator):
         # Close the opened sub areas in reverse order.
         for sub_area in rev_sub_areas:
             direction = re.sub(r"\d", "", sub_area)
-            _close_area(direction, parent_area_pointer, sub_area)
+            _close_area(context, direction, parent_area_pointer, sub_area)
 
         # Remove the selected sub area from the list.
         sub_areas.remove(parent_area_key)
@@ -247,7 +247,7 @@ class SAT_OT_close_area(Operator):
         if sub_areas:
             directions = [re.sub(r"\d", "", char) for char in sub_areas]
             for direction in directions:
-                _split_area(direction)
+                _split_area(context, direction)
 
         return {"FINISHED"}
 

@@ -14,7 +14,7 @@ from bpy.props import (
 # TODO Get area type items from ui_type.
 """
 def area_type_items_callback(self, context):
-    return bpy.types.Area.bl_rna.properties['ui_type'].enum_items
+    return bpy.types.Area.bl_rna.properties['type'].enum_items
 """
 
 
