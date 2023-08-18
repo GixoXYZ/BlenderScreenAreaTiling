@@ -215,6 +215,10 @@ class SAT_OT_split_area(Operator):
     )
 
     def execute(self, context):
+        if context.screen.show_fullscreen:
+            err = "Please exit the maximized mode to open the selected area."
+            self.report({"ERROR"}, err)
+            return {"FINISHED"}
         _split_area(context, self.direction)
 
         return {"FINISHED"}
@@ -231,6 +235,11 @@ class SAT_OT_close_area(Operator):
     )
 
     def execute(self, context):
+        if context.screen.show_fullscreen:
+            err = "Please exit the maximized mode to close the selected area."
+            self.report({"ERROR"}, err)
+            return {"FINISHED"}
+
         parent_area_pointer = context.area.as_pointer()
         parent_area_key = str(parent_area_pointer) + self.direction
         sub_areas = [key for key in area_dictionary.keys() if key.startswith(str(parent_area_pointer))]
