@@ -29,7 +29,7 @@ def _add_hotkey():
         print("Keymap Error")
         return
 
-    km = kc.keymaps.new(name="Object Mode", space_type="EMPTY")
+    km = kc.keymaps.new(name="3D View", space_type="VIEW_3D")
     # Add "Alt" + "Space" as the pie menu hotkey.
     kmi = km.keymap_items.new(
         SAT_OT_PIE_tiling_ui_main_call.bl_idname, "SPACE", "PRESS", alt=True
